@@ -51,7 +51,7 @@ Before running the project, make sure you have the following installed:
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/antigravity-terminal.git
+git clone https://github.com/juanchoalcoba/antigravity-terminal.git
 cd antigravity-terminal
 ```
 
