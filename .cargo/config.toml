@@ -1,0 +1,3 @@
+[build]
+# Redirect all build artifacts outside of OneDrive to prevent sync locks
+target-dir = "C:/Users/juanc/.cargo/target/antigravity"
