@@ -6,61 +6,63 @@
 
 html, body, #root {
   height: 100vh;
+  width: 100vw;
   overflow: hidden;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg-base);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* ─── Design Tokens ──────────────────────────────────── */
 :root {
-  /* Backgrounds */
-  --bg-base:        #0c0c10;
-  --bg-surface:     #111117;
-  --bg-elevated:    #18181f;
-  --bg-hover:       #1e1e28;
-  --bg-active:      #252535;
+  /* Backgrounds - Deep, pure darks for maximum contrast */
+  --bg-base:        #000000;
+  --bg-surface:     #09090b;
+  --bg-elevated:    #131316;
+  --bg-hover:       #1c1c21;
+  --bg-active:      #27272a;
 
-  /* Borders */
-  --border-subtle:  #1e1e2a;
-  --border-default: #27273a;
-  --border-strong:  #3a3a52;
+  /* Borders - Subtle and sharp */
+  --border-subtle:  #18181b;
+  --border-default: #27272a;
+  --border-strong:  #3f3f46;
 
-  /* Text */
-  --text-primary:   #e2e2ea;
-  --text-secondary: #8b8ba8;
-  --text-muted:     #52526a;
-  --text-inverse:   #0c0c10;
+  /* Text - Crisp and readable */
+  --text-primary:   #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+  --text-inverse:   #020617;
 
-  /* Accent – purple-blue gradient */
-  --accent-from:    #7c3aed;
-  --accent-to:      #2563eb;
-  --accent-solid:   #6d28d9;
-  --accent-glow:    rgba(124, 58, 237, 0.25);
+  /* Accent – Electrifying Cyan/Blue gradient */
+  --accent-from:    #0ea5e9;
+  --accent-to:      #3b82f6;
+  --accent-solid:   #0284c7;
+  --accent-glow:    rgba(14, 165, 233, 0.15);
 
-  /* Semantic colors */
-  --green:   #22c55e;
-  --yellow:  #f59e0b;
+  /* Semantic colors - Vibrant but not overwhelming */
+  --green:   #10b981;
+  --yellow:  #eab308;
   --red:     #ef4444;
   --blue:    #3b82f6;
   --cyan:    #06b6d4;
-  --purple:  #a855f7;
+  --purple:  #8b5cf6;
   --orange:  #f97316;
 
   /* Sizes */
-  --topbar-h:   44px;
+  --topbar-h:   48px;
   --sidebar-w:  260px;
   --vpanel-w:   420px;
-  --radius-sm:  6px;
-  --radius-md:  10px;
-  --radius-lg:  16px;
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--accent-from), var(--accent-to)); border-radius: 999px; }
 
 /* ─── Utilities ──────────────────────────────────────── */
 .flex        { display: flex; }

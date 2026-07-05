@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function OverlayManager() {
   const [visualData, setVisualData] = useState<{ command: string, data: any } | null>(null);

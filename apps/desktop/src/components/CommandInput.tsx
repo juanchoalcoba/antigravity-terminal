@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 
 interface Props {
   onExecute: (command: string) => void;
@@ -7,7 +7,7 @@ interface Props {
 export function CommandInput({ onExecute }: Props) {
   const [input, setInput] = useState('');
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onExecute(input);
       setInput('');

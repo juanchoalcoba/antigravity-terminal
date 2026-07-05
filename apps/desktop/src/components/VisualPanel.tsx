@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GitTimeline } from './GitTimeline';
 import type { GitCommit } from './GitTimeline';
+import { VisualPanels } from './VisualPanels';
+import { FileExplorer } from './FileExplorer';
+import type { FileInfo } from './FileExplorer';
 
 const TABS = [
   { id: 'git',    label: 'Git Timeline',       icon: '◈', color: '#a855f7' },
@@ -45,6 +48,10 @@ export function VisualPanel({ visible, onToggle }: VisualPanelProps) {
   const [activeTab, setActiveTab] = useState('git');
   const [hasData, setHasData] = useState<Record<string, boolean>>({});
   const [gitCommits, setGitCommits] = useState<GitCommit[] | null>(null);
+  const [dockerData, setDockerData] = useState<Array<{ containerId: string; image: string; command: string; status: string; names: string }> | null>(null);
+  const [systemData, setSystemData] = useState<{ processes: Array<{ user: string; pid: string; cpu: string; mem: string; command: string }> } | null>(null);
+  const [fileData, setFileData] = useState<FileInfo[] | null>(null);
+  const [currentPath, setCurrentPath] = useState<string>('');
 
   useEffect(() => {
     const handleOutputReady = (e: Event) => {
@@ -55,11 +62,22 @@ export function VisualPanel({ visible, onToggle }: VisualPanelProps) {
       if (cmd.startsWith('git')) {
         setHasData(d => ({ ...d, git: true }));
         setGitCommits(Array.isArray(data) ? data as GitCommit[] : []);
-        setActiveTab('git'); // auto-switch to git tab when data arrives
+        setActiveTab('git');
       }
-      if (cmd.startsWith('docker')) setHasData(d => ({ ...d, docker: true }));
-      if (cmd.startsWith('ls'))     setHasData(d => ({ ...d, files: true }));
-      if (cmd === 'top')            setHasData(d => ({ ...d, system: true }));
+      if (cmd.startsWith('docker')) {
+        setHasData(d => ({ ...d, docker: true }));
+        setDockerData(Array.isArray(data) ? data : []);
+      }
+      if (cmd.startsWith('ls')) {
+        setHasData(d => ({ ...d, files: true }));
+        setFileData(Array.isArray(data) ? data : []);
+        setCurrentPath(customEvent.detail?.path ?? '');
+        setActiveTab('files');
+      }
+      if (cmd === 'top' || cmd.startsWith('ps')) {
+        setHasData(d => ({ ...d, system: true }));
+        setSystemData(data && typeof data === 'object' ? data : { processes: [] });
+      }
     };
     window.addEventListener('visual-output-ready', handleOutputReady);
     return () => window.removeEventListener('visual-output-ready', handleOutputReady);
@@ -149,6 +167,12 @@ export function VisualPanel({ visible, onToggle }: VisualPanelProps) {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px' }}>
         {activeTab === 'git' ? (
           <GitTimeline commits={gitCommits} />
+        ) : activeTab === 'files' && fileData ? (
+          <FileExplorer files={fileData} currentPath={currentPath} />
+        ) : activeTab === 'docker' ? (
+          <VisualPanels gitCommits={gitCommits} dockerData={dockerData} systemData={systemData} />
+        ) : activeTab === 'system' ? (
+          <VisualPanels gitCommits={gitCommits} dockerData={dockerData} systemData={systemData} />
         ) : (
           <EmptyState
             label={TABS.find(t => t.id === activeTab)?.label ?? ''}

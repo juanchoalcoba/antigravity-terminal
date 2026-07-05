@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { TopBar } from './TopBar';
 import { Sidebar } from './Sidebar';
 import { Terminal } from './Terminal';
@@ -12,14 +12,15 @@ export function AppLayout() {
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
+      width: '100vw',
       overflow: 'hidden',
-      backgroundColor: 'var(--bg-base)',
+      background: 'radial-gradient(circle at top left, rgba(124, 58, 237, 0.14), transparent 32%), var(--bg-base)',
     }}>
       {/* ── Top Bar ────────────────────────────────────────── */}
       <TopBar />
 
       {/* ── Body: 3 columns ────────────────────────────────── */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
 
         {/* ── Column 1: Sidebar ──────────────────────────────── */}
         <Sidebar />
@@ -30,6 +31,7 @@ export function AppLayout() {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          minWidth: 0,
           backgroundColor: 'var(--bg-base)',
           position: 'relative',
         }}>
@@ -38,10 +40,11 @@ export function AppLayout() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0 16px',
-            height: 32,
+            padding: '8px 16px',
+            minHeight: 40,
             borderBottom: '1px solid var(--border-subtle)',
             flexShrink: 0,
+            backgroundColor: 'rgba(255,255,255,0.015)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ color: 'var(--green)', fontSize: 8 }}>●</span>
@@ -69,7 +72,7 @@ export function AppLayout() {
           </div>
 
           {/* xterm.js terminal */}
-          <div style={{ flex: 1, overflow: 'hidden', padding: '8px' }}>
+          <div style={{ flex: 1, overflow: 'hidden', padding: '10px 12px 12px' }}>
             <Terminal />
           </div>
 
@@ -80,7 +83,7 @@ export function AppLayout() {
             gap: 6,
             padding: '8px 12px',
             borderTop: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-surface)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
             flexShrink: 0,
             overflowX: 'auto',
             scrollbarWidth: 'none',
@@ -97,10 +100,10 @@ export function AppLayout() {
             ].map(s => (
               <button key={s.cmd} style={{
                 display: 'flex', alignItems: 'center', gap: 5,
-                padding: '5px 10px', flexShrink: 0,
+                padding: '6px 10px', flexShrink: 0,
                 border: '1px solid var(--border-default)',
-                borderRadius: 'var(--radius-sm)',
-                background: 'var(--bg-elevated)',
+                borderRadius: '999px',
+                background: 'rgba(255,255,255,0.03)',
                 color: 'var(--text-secondary)',
                 fontSize: 11, cursor: 'pointer',
                 transition: 'all 0.15s',

@@ -4,7 +4,7 @@ mod pty;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
-    .manage(pty::manager::PtyManager::new())
+    .manage(pty::manager::SessionManager::new())
     .invoke_handler(tauri::generate_handler![
       commands::shell::execute_shell_command,
       commands::pty::create_pty_session,
@@ -12,7 +12,8 @@ pub fn run() {
       commands::pty::resize_pty,
       commands::pty::destroy_pty_session,
       commands::process::register_process,
-      commands::process::mark_process_ended
+      commands::process::mark_process_ended,
+      commands::fs::get_directory_contents
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {

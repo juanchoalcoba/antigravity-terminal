@@ -1,5 +1,4 @@
-import React from 'react';
-import { OutputEntry } from './TerminalPanel';
+import type { OutputEntry } from './TerminalPanel';
 
 interface Props {
   history: OutputEntry[];

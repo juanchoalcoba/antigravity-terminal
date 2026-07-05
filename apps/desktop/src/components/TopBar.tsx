@@ -1,4 +1,3 @@
-import React from 'react';
 
 interface TopBarProps {
   activeSession?: string;
@@ -19,7 +18,7 @@ export function TopBar({ activeSession = 'juancho@antigravity' }: TopBarProps) {
       zIndex: 10,
     }}>
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '200px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '200px', flexShrink: 0 }}>
         <div style={{
           width: 26,
           height: 26,
@@ -51,6 +50,7 @@ export function TopBar({ activeSession = 'juancho@antigravity' }: TopBarProps) {
         color: 'var(--text-primary)',
         fontFamily: "'JetBrains Mono', monospace",
         cursor: 'pointer',
+        minWidth: 0,
       }}>
         <span style={{ color: 'var(--green)', fontSize: '8px' }}>●</span>
         {activeSession}

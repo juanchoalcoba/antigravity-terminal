@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { executeShellCommand, CommandResult } from '../lib/api';
+import { useEffect, useState } from 'react';
+import { executeShellCommand, type CommandResult } from '../lib/api';
+import { addCommandToSession, createInitialSessions } from '../lib/sessionState';
 import { CommandInput } from './CommandInput';
 import { OutputPanel } from './OutputPanel';
 
@@ -12,12 +13,20 @@ export interface OutputEntry {
 export function TerminalPanel() {
   const [history, setHistory] = useState<OutputEntry[]>([]);
   const [nextId, setNextId] = useState(1);
+  const [sessionState, setSessionState] = useState(createInitialSessions);
+
+  useEffect(() => {
+    window.localStorage.setItem('antigravity-sessions', JSON.stringify(sessionState));
+    window.dispatchEvent(new CustomEvent('session-state-updated', { detail: sessionState }));
+  }, [sessionState]);
 
   const handleCommand = async (command: string) => {
     if (!command.trim()) return;
 
     const id = nextId;
     setNextId(id + 1);
+
+    setSessionState((current) => addCommandToSession(current, command));
 
     const entry: OutputEntry = { id, command };
     setHistory((prev) => [...prev, entry]);

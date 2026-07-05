@@ -1,4 +1,3 @@
-import React from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface GitCommit {

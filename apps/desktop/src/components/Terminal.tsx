@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { classifyCommand, CommandType } from '../lib/CommandRouter';
-import { getParserFor, stripAnsi } from '../lib/Parsers';
+import { getParserFor } from '../lib/Parsers';
+import { loadStoredSessions } from '../lib/storage';
+import type { SessionState } from '../lib/sessionState';
 import '@xterm/xterm/css/xterm.css';
 
 export function Terminal() {
@@ -16,11 +18,22 @@ export function Terminal() {
 
     const term = new XTerm({
       cursorBlink: true,
+      allowTransparency: true,
       theme: {
-        background: '#1e1e1e',
-        foreground: '#d4d4d4',
+        background: 'transparent',
+        foreground: '#f8fafc',
+        cursor: '#0ea5e9',
+        selectionBackground: 'rgba(14, 165, 233, 0.3)',
+        black: '#000000',
+        red: '#ef4444',
+        green: '#10b981',
+        yellow: '#eab308',
+        blue: '#3b82f6',
+        magenta: '#8b5cf6',
+        cyan: '#06b6d4',
+        white: '#f8fafc',
       },
-      fontFamily: 'monospace',
+      fontFamily: "'JetBrains Mono', Consolas, monospace",
     });
 
     const fitAddon = new FitAddon();
@@ -54,11 +67,36 @@ export function Terminal() {
       visualOutputBuffer = '';
     };
 
-    // Defined here so cleanup can reference it
-    const handleVisualStart = (e: Event) => {
+    const handleVisualStart = async (e: Event) => {
       const customEvent = e as CustomEvent;
+      const cmd = customEvent.detail.command.trim();
+
+      if (cmd.startsWith('ls') || cmd.startsWith('ll') || cmd.startsWith('dir')) {
+        let cwdToUse = '.';
+        try {
+            const stored = loadStoredSessions<SessionState | null>(null);
+            const activeSession = stored?.sessions.find((session) => session.id === stored.activeSessionId);
+            cwdToUse = activeSession?.cwd && activeSession.cwd !== '~' ? activeSession.cwd : '.';
+            
+            const contents = await invoke('get_directory_contents', { path: cwdToUse });
+            
+            window.dispatchEvent(new CustomEvent('visual-output-ready', {
+              detail: { command: 'ls', data: contents, path: cwdToUse }
+            }));
+            return;
+        } catch(err) {
+            console.error('[Terminal] Failed to get directory contents:', err);
+            term.write(`\r\n\x1b[31m[Visual Panel Error] Failed to read directory at path '${cwdToUse}': ${String(err)}\x1b[0m\r\n`);
+            // Disparamos un evento vacío para no dejar la UI rota
+            window.dispatchEvent(new CustomEvent('visual-output-ready', {
+              detail: { command: 'ls', data: [], path: cwdToUse }
+            }));
+            return;
+        }
+      }
+
       isCapturingVisualOutput = true;
-      currentVisualCommand = customEvent.detail.command;
+      currentVisualCommand = cmd;
       visualOutputBuffer = '';
       if (outputIdleTimer) clearTimeout(outputIdleTimer);
     };
@@ -68,6 +106,9 @@ export function Terminal() {
     let unlistenExit: (() => void) | null = null;
 
     const initPty = async () => {
+      const stored = loadStoredSessions<SessionState | null>(null);
+      const activeSession = stored?.sessions.find((session) => session.id === stored.activeSessionId);
+      const initialCwd = activeSession?.cwd && activeSession.cwd !== '~' ? activeSession.cwd : null;
       // Guard: only run inside Tauri — not in a regular browser
       const isTauri = '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
       if (!isTauri) {
@@ -82,6 +123,10 @@ export function Terminal() {
           cols: term.cols,
         });
         sessionIdRef.current = sessionId;
+
+        if (initialCwd) {
+          invoke('write_to_pty', { sessionId, data: `cd ${JSON.stringify(initialCwd).slice(1, -1)}\r` }).catch(console.error);
+        }
 
         // --- PTY output stream ---
         unlistenData = await listen<{ data: string }>(`pty-data-${sessionId}`, (event) => {
@@ -119,9 +164,22 @@ export function Terminal() {
               console.log(`[Router] SYSTEM: ${currentLineBuffer}`);
             }
 
-            // Notify backend to register and classify the process
-            if (currentLineBuffer.trim()) {
-              invoke('register_process', { sessionId, command: currentLineBuffer.trim() }).catch(console.error);
+            const commandText = currentLineBuffer.trim();
+
+            if (commandText.startsWith('cd ')) {
+              const target = commandText.replace(/^cd\s+/, '').trim();
+              const cwd = target.startsWith('/') || target.startsWith('C:') || target.startsWith('D:')
+                ? target
+                : `${activeSession?.cwd && activeSession.cwd !== '~' ? activeSession.cwd : ''}/${target}`.replace(/\/+/g, '/');
+              if (activeSession?.id) {
+                window.dispatchEvent(new CustomEvent('session-cwd-updated', {
+                  detail: { sessionId: activeSession.id, cwd },
+                }));
+              }
+            }
+
+            if (commandText) {
+              invoke('register_process', { sessionId, command: commandText }).catch(console.error);
             }
 
             currentLineBuffer = '';
